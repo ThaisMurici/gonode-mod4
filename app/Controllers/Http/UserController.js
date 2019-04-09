@@ -1,5 +1,6 @@
 'use strict'
 
+const Database = use('Database')
 const User = use('App/Models/User')
 
 class UserController {
@@ -7,9 +8,13 @@ class UserController {
     const userData = request.only(['username', 'email', 'password'])
     const addresses = request.input('addresses')
 
-    const user = await User.create(userData)
+    const trx = await Database.beginTransaction()
 
-    await user.addresses().createMany(addresses)
+    const user = await User.create(userData, trx)
+
+    await user.addresses().createMany(addresses, trx)
+
+    await trx.commit()
 
     return user
   }
